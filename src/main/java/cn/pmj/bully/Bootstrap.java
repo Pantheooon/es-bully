@@ -1,7 +1,7 @@
 package cn.pmj.bully;
 
 import cn.pmj.bully.conf.Configuration;
-import cn.pmj.bully.node.Node;
+import cn.pmj.bully.cluster.node.Node;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

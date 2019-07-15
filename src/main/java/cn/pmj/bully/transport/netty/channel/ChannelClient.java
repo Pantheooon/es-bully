@@ -1,7 +1,7 @@
-package cn.pmj.bully.unicast.channel;
+package cn.pmj.bully.transport.netty.channel;
 
-import cn.pmj.bully.node.NodeInfo;
-import cn.pmj.bully.unicast.ChannelManager;
+import cn.pmj.bully.cluster.node.NodeInfo;
+import cn.pmj.bully.transport.netty.ChannelManager;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;

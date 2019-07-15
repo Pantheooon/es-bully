@@ -1,4 +1,4 @@
-package cn.pmj.bully.node;
+package cn.pmj.bully.cluster.node;
 
 public enum NodeType {
 

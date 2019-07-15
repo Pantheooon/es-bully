@@ -1,4 +1,4 @@
-package cn.pmj.bully.unicast.serialize;
+package cn.pmj.bully.transport.netty.serialize;
 
 public class MessagePackSerialize implements ISerialize {
     @Override

@@ -1,12 +1,10 @@
-package cn.pmj.bully.node;
+package cn.pmj.bully.cluster.node;
 
 import cn.pmj.bully.conf.Configuration;
-import cn.pmj.bully.unicast.channel.ChannelClient;
-import cn.pmj.bully.unicast.channel.ChannelServer;
+import cn.pmj.bully.transport.netty.channel.ChannelClient;
+import cn.pmj.bully.transport.netty.channel.ChannelServer;
 import io.netty.channel.Channel;
-import jdk.nashorn.internal.runtime.regexp.joni.constants.NodeType;
-import cn.pmj.bully.unicast.UniCast;
-import cn.pmj.bully.util.IdGenerator;
+import cn.pmj.bully.transport.unicast.UniCast;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +38,7 @@ public class Node {
         if (master == null) {
             //after n loop elections ,still no master,throw a exception
         }
-        //if the cn.pmj.bully.node is master,receive the meassage from slave to ping and pong ,if slave,
+        //if the cn.pmj.bully.cluster.node is master,receive the meassage from slave to ping and pong ,if slave,
 
     }
 

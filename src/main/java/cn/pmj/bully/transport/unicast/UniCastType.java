@@ -1,4 +1,4 @@
-package cn.pmj.bully.unicast;
+package cn.pmj.bully.transport.unicast;
 
 public enum UniCastType {
 
@@ -23,7 +23,7 @@ public enum UniCastType {
     PONG,
 
     /**
-     * master has checked out the cn.pmj.bully.node crashed
+     * master has checked out the cn.pmj.bully.cluster.node crashed
      */
     CRASHED;
 }

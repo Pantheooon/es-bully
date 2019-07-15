@@ -1,6 +1,6 @@
-package cn.pmj.bully.unicast;
+package cn.pmj.bully.transport.unicast;
 
-import cn.pmj.bully.node.NodeInfo;
+import cn.pmj.bully.cluster.node.NodeInfo;
 
 import java.nio.channels.Channel;
 

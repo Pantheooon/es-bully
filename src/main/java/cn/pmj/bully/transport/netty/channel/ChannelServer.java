@@ -1,6 +1,6 @@
-package cn.pmj.bully.unicast.channel;
+package cn.pmj.bully.transport.netty.channel;
 
-import cn.pmj.bully.node.NodeInfo;
+import cn.pmj.bully.cluster.node.NodeInfo;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
