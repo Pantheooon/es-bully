@@ -2,6 +2,7 @@ package cn.pmj.bully.transport.netty.channel;
 
 import cn.pmj.bully.cluster.node.NodeInfo;
 import cn.pmj.bully.transport.netty.ChannelManager;
+import cn.pmj.bully.transport.ping.DiscoveryPing;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -17,7 +18,7 @@ public class ChannelClient {
 
     final static EventLoopGroup group = new NioEventLoopGroup(1);
 
-    public static Channel connect(NodeInfo nodeInfo, Integer retry) throws InterruptedException {
+    public static DiscoveryPing connect(NodeInfo nodeInfo, Integer retry) throws InterruptedException {
 
         log.info("id:{},host:{},port:{},starting-----", nodeInfo.getNodeId(), nodeInfo.getHost(), nodeInfo.getPort());
         Channel channel = null;
@@ -50,7 +51,7 @@ public class ChannelClient {
         } finally {
             group.shutdownGracefully();
         }
-        return channel;
+        return new DiscoveryPing();
     }
 
 }

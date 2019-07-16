@@ -3,14 +3,15 @@ package cn.pmj.bully.cluster.node;
 import cn.pmj.bully.conf.Configuration;
 import cn.pmj.bully.transport.netty.channel.ChannelClient;
 import cn.pmj.bully.transport.netty.channel.ChannelServer;
-import io.netty.channel.Channel;
-import cn.pmj.bully.transport.unicast.UniCast;
+import cn.pmj.bully.transport.ping.DiscoveryPing;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Data
 @Slf4j
@@ -18,60 +19,53 @@ public class Node {
 
 
     private List<NodeInfo> nodeList;
-    private Map<String, UniCast> uniCastMap;
+    private Map<String, DiscoveryPing> uniCastMap;
     private Configuration configuration;
-    private NodeInfo master;
     private NodeInfo localNode;
     private List<NodeInfo> activeNodes = new ArrayList<>();
 
-    public Node(Configuration configuration) {
+    public Node(NodeInfo nodeInfo, Configuration configuration) {
+        localNode = nodeInfo;
         this.configuration = configuration;
     }
 
-    public void start() throws Exception {
-        //1.bind local address
-        bind();
-        //2.connect 2 other nodes
-        connect();
-        //3.elect
-        master = electMaster();
-        if (master == null) {
-            //after n loop elections ,still no master,throw a exception
-        }
-        //if the cn.pmj.bully.cluster.node is master,receive the meassage from slave to ping and pong ,if slave,
-
+    public void bind() {
+        doBind();
     }
 
-    private NodeInfo electMaster() {
-        NodeInfo node = null;
-        Integer loopTimes = configuration.getElectTimes();
-        for (Integer i = 0; i < loopTimes; i++) {
-            node = findMaster();
-            if (node != null) {
-                break;
-            }
-        }
-        return node;
-    }
 
-    private void connect() {
-        List<NodeInfo> nodeList = getNodeList();
+    public List<DiscoveryPing.DiscoveryPingResponse> ping() {
+        List<Future<DiscoveryPing.DiscoveryPingResponse>> futures = new ArrayList<>();
         for (NodeInfo nodeInfo : nodeList) {
-            if (!localNode.equals(nodeInfo)) {
+            futures.add(ping(nodeInfo));
+        }
+
+        if (futures != null && futures.size() != 0) {
+            List<DiscoveryPing.DiscoveryPingResponse> responses = new ArrayList<>();
+            for (Future<DiscoveryPing.DiscoveryPingResponse> future : futures) {
                 try {
-                    Channel channel = ChannelClient.connect(nodeInfo, 3);
-                    if (channel != null) {
-                        activeNodes.add(nodeInfo);
-                    }
+                    responses.add(future.get());
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
             }
         }
-
+        return null;
     }
 
-    private void bind() {
+    public Future<DiscoveryPing.DiscoveryPingResponse> ping(NodeInfo nodeInfo) {
+        try {
+            DiscoveryPing ping = ChannelClient.connect(nodeInfo, 3);
+            return ping.ping();
+        } catch (InterruptedException e) {
+            return null;
+        }
+    }
+
+
+    private void doBind() {
         try {
             ChannelServer.connect(localNode);
         } catch (InterruptedException e) {
@@ -79,9 +73,5 @@ public class Node {
         }
     }
 
-
-    private NodeInfo findMaster() {
-        return null;
-    }
 
 }

@@ -1,5 +1,6 @@
 package cn.pmj.bully.cluster.node;
 
+import cn.pmj.bully.conf.Configuration;
 import lombok.Data;
 
 import java.util.Objects;
@@ -17,11 +18,13 @@ public class NodeInfo {
     private String nodeId;
 
 
-    private String version;
+    private Long version = System.currentTimeMillis();
 
 
-    protected NodeType nodeType;
 
+
+    public NodeInfo(Configuration configuration) {
+    }
 
     @Override
     public boolean equals(Object o) {
