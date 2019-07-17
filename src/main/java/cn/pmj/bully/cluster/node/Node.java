@@ -1,8 +1,8 @@
 package cn.pmj.bully.cluster.node;
 
 import cn.pmj.bully.conf.Configuration;
-import cn.pmj.bully.transport.netty.channel.ChannelClient;
-import cn.pmj.bully.transport.netty.channel.ChannelServer;
+import cn.pmj.bully.transport.netty.TcpClient;
+import cn.pmj.bully.transport.netty.DiscoveryServer;
 import cn.pmj.bully.transport.ping.DiscoveryPing;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -21,17 +21,16 @@ public class Node {
     private List<NodeInfo> nodeList;
     private Map<String, DiscoveryPing> uniCastMap;
     private Configuration configuration;
-    private NodeInfo localNode;
+    private NodeInfo localNodeInfo;
     private List<NodeInfo> activeNodes = new ArrayList<>();
 
+    private final static int RETRY_TIMES = 3;
+
     public Node(NodeInfo nodeInfo, Configuration configuration) {
-        localNode = nodeInfo;
+        localNodeInfo = nodeInfo;
         this.configuration = configuration;
     }
 
-    public void bind() {
-        doBind();
-    }
 
 
     public List<DiscoveryPing.DiscoveryPingResponse> ping() {
@@ -56,18 +55,32 @@ public class Node {
     }
 
     public Future<DiscoveryPing.DiscoveryPingResponse> ping(NodeInfo nodeInfo) {
-        try {
-            DiscoveryPing ping = ChannelClient.connect(nodeInfo, 3);
+        TcpClient client = new TcpClient(nodeInfo);
+        try{
+            DiscoveryPing ping = null;
+            try {
+                ping = client.connect(RETRY_TIMES);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return ping.ping();
-        } catch (InterruptedException e) {
-            return null;
+        }finally {
+            client.shutDownGracefully();
         }
+
     }
 
 
-    private void doBind() {
+    public void bind() {
         try {
-            ChannelServer.connect(localNode);
+            DiscoveryServer server = new DiscoveryServer(getLocalNodeInfo());
+            server.doBind((future) -> {
+                if (future.isSuccess()) {
+                    log.info("node:{},bind port:{},successfully", getLocalNodeInfo().getNodeId(), getLocalNodeInfo().getPort());
+                } else {
+                    log.info("node server started faile ,cause:{}", future.cause().getLocalizedMessage());
+                }
+            });
         } catch (InterruptedException e) {
             log.error("start failed-->{}", e.getLocalizedMessage());
         }

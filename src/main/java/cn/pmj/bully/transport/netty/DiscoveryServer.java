@@ -1,4 +1,4 @@
-package cn.pmj.bully.transport.netty.channel;
+package cn.pmj.bully.transport.netty;
 
 import cn.pmj.bully.cluster.node.NodeInfo;
 import io.netty.bootstrap.ServerBootstrap;
@@ -12,20 +12,31 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
-public class ChannelServer {
+public class DiscoveryServer {
 
-    public static void connect(NodeInfo nodeInfo) throws InterruptedException {
-        ServerBootstrap b = new ServerBootstrap();
-        EventLoopGroup workerGroup = new NioEventLoopGroup(1);
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+
+    private NodeInfo nodeInfo;
+    private ServerBootstrap bootstrap = new ServerBootstrap();
+    private EventLoopGroup workerGroup = new NioEventLoopGroup(1);
+    private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+
+    public DiscoveryServer(NodeInfo nodeInfo) {
+        this.nodeInfo = nodeInfo;
+    }
+
+
+    public void doBind(GenericFutureListener<? extends Future<? super Void>> listener) throws InterruptedException {
+
         try {
-            b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+            bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 1024)
                     .childHandler(new ServerChannelInitializer());
-            //异步连接操作
-            ChannelFuture sync = b.bind(nodeInfo.getHost(), nodeInfo.getPort()).sync();
-            sync.channel().closeFuture().sync();
+            ChannelFuture sync = bootstrap.bind(nodeInfo.getHost(), nodeInfo.getPort()).sync();
+            ChannelFuture future = sync.channel().closeFuture().sync();
+            future.addListener(listener);
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

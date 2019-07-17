@@ -1,4 +1,4 @@
-package cn.pmj.bully.transport.netty.handler;
+package cn.pmj.bully.transport.netty;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
