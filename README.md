@@ -1,1 +1,2 @@
-# es-bully
+
+# es-bully 算法的简版实现ing....
