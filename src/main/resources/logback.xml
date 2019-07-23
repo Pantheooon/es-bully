@@ -5,14 +5,7 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
         </layout>
     </appender>
-
-
-    <logger name="cn.pmj" level="info" additivity="false">
-        <appender-ref ref="STDOUT"/>
-    </logger>
-
-
-    <root level="error">
+    <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
 

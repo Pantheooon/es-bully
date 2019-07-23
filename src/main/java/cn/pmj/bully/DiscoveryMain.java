@@ -3,7 +3,7 @@ package cn.pmj.bully;
 import cn.pmj.bully.cluster.node.Node;
 import cn.pmj.bully.cluster.node.NodeInfo;
 import cn.pmj.bully.conf.Configuration;
-import cn.pmj.bully.transport.ping.DiscoveryPing;
+import cn.pmj.bully.transport.netty.BullyResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -44,7 +44,7 @@ public class DiscoveryMain {
     }
 
     private NodeInfo findMaster() {
-        List<DiscoveryPing.DiscoveryPingResponse> ping = node.ping();
+        List<BullyResponse> ping = node.ping();
 
         return null;
     }
