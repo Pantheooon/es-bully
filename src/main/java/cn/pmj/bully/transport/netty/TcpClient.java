@@ -36,7 +36,7 @@ public class TcpClient {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(new BullyDecoder());
+                        ch.pipeline().addLast(new BullyDecoder(BullyResponse.class));
                         ch.pipeline().addLast(new BullyEncoder());
                         ch.pipeline().addLast(new ClientHandler());
 

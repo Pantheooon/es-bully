@@ -10,6 +10,10 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         log.info("msg-->{}", msg);
+        BullyRequest request =(BullyRequest)msg;
+        BullyResponse response = new BullyResponse();
+        response.setRequestId(request.getRequestId());
+        ctx.writeAndFlush(response);
     }
 
 

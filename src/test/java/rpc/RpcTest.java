@@ -36,6 +36,12 @@ public class RpcTest {
         bullyRequest.setBody("------");
         bullyRequest.setRequestId("123123123");
         DiscoveryChannel.InvokeFuture future = connect1.writeAndFlush(bullyRequest);
+
+
+        BullyRequest request = new BullyRequest();
+        request.setRequestId("request");
+        request.setBody("txt");
+        DiscoveryChannel.InvokeFuture invokeFuture = connect1.writeAndFlush(request);
         Thread.sleep(10000);
     }
 

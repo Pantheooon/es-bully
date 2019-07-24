@@ -15,6 +15,8 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.ResponseCache;
+
 @Slf4j
 public class DiscoveryServer implements Runnable{
 
@@ -39,7 +41,7 @@ public class DiscoveryServer implements Runnable{
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new BullyDecoder());
+                            ch.pipeline().addLast(new BullyDecoder(BullyRequest.class));
                             ch.pipeline().addLast(new BullyEncoder());
                             ch.pipeline().addLast(new ServerHandler());
                         }
