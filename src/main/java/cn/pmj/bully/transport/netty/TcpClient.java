@@ -3,7 +3,7 @@ package cn.pmj.bully.transport.netty;
 import cn.pmj.bully.cluster.node.NodeInfo;
 import cn.pmj.bully.transport.netty.serialize.BullyDecoder;
 import cn.pmj.bully.transport.netty.serialize.BullyEncoder;
-import cn.pmj.bully.transport.ping.DiscoveryChannel;
+import cn.pmj.bully.transport.discovery.DiscoveryChannel;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -15,6 +15,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class TcpClient {
@@ -26,8 +27,7 @@ public class TcpClient {
 
 
 
-
-    public static DiscoveryChannel connect(NodeInfo nodeInfo) throws InterruptedException {
+    public static DiscoveryChannel connect(NodeInfo nodeInfo, Long timeOut, TimeUnit timeUnit) throws InterruptedException {
         log.info("id:{},host:{},port:{},starting-----", nodeInfo.getNodeId(), nodeInfo.getHost(), nodeInfo.getPort());
         bootstrap.group(group).channel(NioSocketChannel.class)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
@@ -43,7 +43,7 @@ public class TcpClient {
                     }
                 });
         ChannelFuture sync = bootstrap.connect(new InetSocketAddress(nodeInfo.getHost(), nodeInfo.getPort())).sync();
-        return new DiscoveryChannel(sync.channel());
+        return new DiscoveryChannel(sync.channel(), timeOut, timeUnit);
     }
 
 

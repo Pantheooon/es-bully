@@ -7,7 +7,15 @@ import lombok.ToString;
 @ToString
 public class BullyRequest {
 
+    private String nodeId;
+
     private String requestId;
 
     private String body;
+
+    private Integer msgType;
+
+    private Long version;
+
+    private Long timeOut;
 }

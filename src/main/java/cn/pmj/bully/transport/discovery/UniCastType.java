@@ -1,4 +1,4 @@
-package cn.pmj.bully.transport.ping;
+package cn.pmj.bully.transport.discovery;
 
 public enum UniCastType {
 
@@ -13,7 +13,7 @@ public enum UniCastType {
     REJOIN,
 
     /**
-     * ping
+     * discovery
      */
     PING,
 

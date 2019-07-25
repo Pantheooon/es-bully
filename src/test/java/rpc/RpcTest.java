@@ -1,16 +1,16 @@
 package rpc;
 
 import cn.pmj.bully.cluster.node.NodeInfo;
+import cn.pmj.bully.transport.netty.BullyResponse;
 import cn.pmj.bully.transport.netty.DiscoveryServer;
 import cn.pmj.bully.transport.netty.BullyRequest;
 import cn.pmj.bully.transport.netty.TcpClient;
-import cn.pmj.bully.transport.ping.DiscoveryChannel;
+import cn.pmj.bully.transport.netty.invoke.InvokeFuture;
+import cn.pmj.bully.transport.discovery.DiscoveryChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 @Slf4j
 public class RpcTest {
@@ -18,12 +18,12 @@ public class RpcTest {
     private CountDownLatch latch = new CountDownLatch(1);
 
     @Test
-    public void test1() throws InterruptedException {
+    public void test1() throws InterruptedException, ExecutionException {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         NodeInfo nodeInfo = new NodeInfo(null);
         nodeInfo.setHost("localhost");
         nodeInfo.setPort(9000);
-        DiscoveryServer server = new DiscoveryServer(nodeInfo,(future) -> {
+        DiscoveryServer server = new DiscoveryServer(nodeInfo, (future) -> {
             if (future.isSuccess()) {
                 log.info("success");
             }
@@ -31,17 +31,20 @@ public class RpcTest {
         executorService.execute(server);
 
         Thread.sleep(4);
-        DiscoveryChannel connect1 = TcpClient.connect(nodeInfo);
+        DiscoveryChannel connect1 = TcpClient.connect(nodeInfo, 2l, TimeUnit.SECONDS);
         BullyRequest bullyRequest = new BullyRequest();
         bullyRequest.setBody("------");
         bullyRequest.setRequestId("123123123");
-        DiscoveryChannel.InvokeFuture future = connect1.writeAndFlush(bullyRequest);
-
+        InvokeFuture future = connect1.writeAndFlush(bullyRequest);
+        BullyResponse bullyResponse = future.get();
+        log.info("--測試--->1{},{}", bullyRequest, bullyResponse);
 
         BullyRequest request = new BullyRequest();
         request.setRequestId("request");
         request.setBody("txt");
-        DiscoveryChannel.InvokeFuture invokeFuture = connect1.writeAndFlush(request);
+        InvokeFuture invokeFuture = connect1.writeAndFlush(request);
+        BullyResponse response = invokeFuture.get();
+        log.info("---測試-->2{},{}", request, response);
         Thread.sleep(10000);
     }
 

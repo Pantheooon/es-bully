@@ -1,4 +1,4 @@
-package cn.pmj.bully.transport.ping;
+package cn.pmj.bully.transport.discovery;
 
 public class UnicastMessage {
 

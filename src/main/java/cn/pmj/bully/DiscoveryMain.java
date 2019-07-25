@@ -44,7 +44,7 @@ public class DiscoveryMain {
     }
 
     private NodeInfo findMaster() {
-        List<BullyResponse> ping = node.ping();
+        List<BullyResponse> ping = node.elect();
 
         return null;
     }

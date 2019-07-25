@@ -25,7 +25,8 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-       log.info("client-->{}",msg);
+        BullyResponse bullyResponse = (BullyResponse)msg;
+        ResponseHolder.setResponse(bullyResponse);
     }
 
     @Override

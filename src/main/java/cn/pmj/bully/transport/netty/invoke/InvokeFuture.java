@@ -1,36 +1,61 @@
 package cn.pmj.bully.transport.netty.invoke;
 
+import cn.pmj.bully.transport.netty.BullyRequest;
+import cn.pmj.bully.transport.netty.BullyResponse;
+import lombok.Data;
+
 import java.util.concurrent.*;
 
-public class InvokeFuture implements Future {
+@Data
+public class InvokeFuture implements Future<BullyResponse> {
 
-    private CountDownLatch countDownLatch = new CountDownLatch(1);
+    private CountDownLatch latch = new CountDownLatch(1);
 
+    private BullyRequest request;
 
+    private BullyResponse response;
 
+    private Long timeOut;
+
+    private TimeUnit timeUnit;
+
+    public InvokeFuture(BullyRequest bullyRequest, Long timeOut, TimeUnit timeUnit) {
+        this.request = bullyRequest;
+        this.timeOut = timeOut;
+        this.timeUnit = timeUnit;
+        request.setTimeOut(System.currentTimeMillis() + timeUnit.toMillis(timeOut));
+    }
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         return false;
     }
 
+
     @Override
     public boolean isCancelled() {
-        return false;
+        return latch.getCount() == 0;
     }
 
     @Override
     public boolean isDone() {
-        return false;
+        return response != null;
     }
 
     @Override
-    public Object get() throws InterruptedException, ExecutionException {
+    public BullyResponse get() throws InterruptedException, ExecutionException {
+        try {
+            return get(2, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
-    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return null;
+    public BullyResponse get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        latch.await(timeout, unit);
+        return response;
     }
+
 }

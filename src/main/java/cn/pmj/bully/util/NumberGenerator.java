@@ -2,7 +2,10 @@ package cn.pmj.bully.util;
 
 import java.util.UUID;
 
-public class IdGenerator {
+public class NumberGenerator {
+
+
+
     /**
      * @return
      */

@@ -4,7 +4,7 @@ import cn.pmj.bully.conf.Configuration;
 import cn.pmj.bully.transport.netty.BullyResponse;
 import cn.pmj.bully.transport.netty.TcpClient;
 import cn.pmj.bully.transport.netty.DiscoveryServer;
-import cn.pmj.bully.transport.ping.DiscoveryChannel;
+import cn.pmj.bully.transport.discovery.DiscoveryChannel;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 @Data
 @Slf4j
@@ -37,7 +38,7 @@ public class Node {
         for (NodeInfo nodeInfo : nodeList) {
             if (!nodeInfo.equals(localNodeInfo)) {
                 try {
-                    DiscoveryChannel connect = TcpClient.connect(nodeInfo);
+                    DiscoveryChannel connect = TcpClient.connect(nodeInfo, 2l, TimeUnit.SECONDS);
                     uniCastMap.put(nodeInfo.getNodeId(), connect);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -47,7 +48,7 @@ public class Node {
         }
     }
 
-    public List<BullyResponse> ping() {
+    public List<BullyResponse> elect() {
         List<Future<BullyResponse>> futures = new ArrayList<>();
         for (NodeInfo nodeInfo : nodeList) {
         }

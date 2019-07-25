@@ -17,6 +17,7 @@ public class NodeInfo {
 
     private String nodeId;
 
+    private Role role;
 
     private Long version = System.currentTimeMillis();
 
@@ -26,12 +27,20 @@ public class NodeInfo {
     public NodeInfo(Configuration configuration) {
     }
 
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof NodeInfo)) return false;
         NodeInfo nodeInfo = (NodeInfo) o;
         return Objects.equals(getNodeId(), nodeInfo.getNodeId());
+    }
+
+
+
+   public   enum  Role{
+        MASTER,SLAVE,NONE
     }
 
 }
