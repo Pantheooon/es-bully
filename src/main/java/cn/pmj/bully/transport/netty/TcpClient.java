@@ -1,6 +1,7 @@
 package cn.pmj.bully.transport.netty;
 
 import cn.pmj.bully.cluster.node.NodeInfo;
+import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import cn.pmj.bully.transport.netty.serialize.BullyDecoder;
 import cn.pmj.bully.transport.netty.serialize.BullyEncoder;
 import cn.pmj.bully.transport.discovery.DiscoveryChannel;

@@ -1,7 +1,7 @@
 package cn.pmj.bully.cluster.node;
 
 import cn.pmj.bully.conf.Configuration;
-import cn.pmj.bully.transport.netty.BullyResponse;
+import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import cn.pmj.bully.transport.netty.TcpClient;
 import cn.pmj.bully.transport.netty.DiscoveryServer;
 import cn.pmj.bully.transport.discovery.DiscoveryChannel;

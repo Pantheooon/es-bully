@@ -1,4 +1,4 @@
-package cn.pmj.bully.transport.netty;
+package cn.pmj.bully.transport.netty.invoke;
 
 import lombok.Data;
 import lombok.ToString;

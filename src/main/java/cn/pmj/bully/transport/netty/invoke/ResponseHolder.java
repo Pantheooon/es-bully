@@ -1,6 +1,4 @@
-package cn.pmj.bully.transport.netty;
-
-import cn.pmj.bully.transport.netty.invoke.InvokeFuture;
+package cn.pmj.bully.transport.netty.invoke;
 
 import java.util.*;
 import java.util.concurrent.CountDownLatch;

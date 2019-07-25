@@ -1,8 +1,8 @@
 package cn.pmj.bully.transport.discovery;
 
 import cn.pmj.bully.cluster.node.NodeInfo;
-import cn.pmj.bully.transport.netty.BullyRequest;
-import cn.pmj.bully.transport.netty.ResponseHolder;
+import cn.pmj.bully.transport.netty.invoke.BullyRequest;
+import cn.pmj.bully.transport.netty.invoke.ResponseHolder;
 import cn.pmj.bully.transport.netty.invoke.InvokeFuture;
 import io.netty.channel.Channel;
 import lombok.Data;

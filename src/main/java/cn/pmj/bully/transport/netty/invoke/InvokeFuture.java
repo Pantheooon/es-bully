@@ -1,7 +1,5 @@
 package cn.pmj.bully.transport.netty.invoke;
 
-import cn.pmj.bully.transport.netty.BullyRequest;
-import cn.pmj.bully.transport.netty.BullyResponse;
 import lombok.Data;
 
 import java.util.concurrent.*;

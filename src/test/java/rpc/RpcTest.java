@@ -1,9 +1,9 @@
 package rpc;
 
 import cn.pmj.bully.cluster.node.NodeInfo;
-import cn.pmj.bully.transport.netty.BullyResponse;
+import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import cn.pmj.bully.transport.netty.DiscoveryServer;
-import cn.pmj.bully.transport.netty.BullyRequest;
+import cn.pmj.bully.transport.netty.invoke.BullyRequest;
 import cn.pmj.bully.transport.netty.TcpClient;
 import cn.pmj.bully.transport.netty.invoke.InvokeFuture;
 import cn.pmj.bully.transport.discovery.DiscoveryChannel;

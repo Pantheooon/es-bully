@@ -1,5 +1,7 @@
 package cn.pmj.bully.transport.netty;
 
+import cn.pmj.bully.transport.netty.invoke.BullyRequest;
+import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import com.alibaba.fastjson.JSON;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
