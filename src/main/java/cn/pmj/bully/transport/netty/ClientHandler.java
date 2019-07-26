@@ -1,5 +1,6 @@
 package cn.pmj.bully.transport.netty;
 
+import cn.pmj.bully.cluster.node.NodeInfo;
 import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import cn.pmj.bully.transport.netty.invoke.ResponseHolder;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,8 +14,16 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClientHandler extends ChannelInboundHandlerAdapter {
 
+    private NodeInfo localNodeInfo;
+
+    private NodeInfo destNodeInfo;
+
    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
+    public ClientHandler(NodeInfo localNodeInfo, NodeInfo destNodeInfo) {
+        this.localNodeInfo = localNodeInfo;
+        this.destNodeInfo = destNodeInfo;
+    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {

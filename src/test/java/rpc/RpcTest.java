@@ -31,7 +31,7 @@ public class RpcTest {
         executorService.execute(server);
 
         Thread.sleep(4);
-        DiscoveryChannel connect1 = TcpClient.connect(nodeInfo, 2l, TimeUnit.SECONDS);
+        DiscoveryChannel connect1 = TcpClient.connect(null, nodeInfo);
         BullyRequest bullyRequest = new BullyRequest();
         bullyRequest.setBody("------");
         bullyRequest.setRequestId("123123123");

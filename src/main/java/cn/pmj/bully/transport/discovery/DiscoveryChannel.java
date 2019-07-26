@@ -18,17 +18,14 @@ public class DiscoveryChannel {
 
     private NodeInfo nodeInfo;
 
-
     private Channel channel;
 
-    private Long timeOut;
+    private Long timeOut = 2L;
 
-    private TimeUnit timeUnit;
+    private TimeUnit timeUnit = TimeUnit.SECONDS;
 
-    public DiscoveryChannel(Channel channel, Long timeOut, TimeUnit timeUnit) {
+    public DiscoveryChannel(Channel channel) {
         this.channel = channel;
-        this.timeOut = timeOut;
-        this.timeUnit = timeUnit;
     }
 
 
@@ -40,7 +37,11 @@ public class DiscoveryChannel {
     }
 
 
-    public void close(){
+
+
+
+
+    public void close() {
         channel.close();
     }
 

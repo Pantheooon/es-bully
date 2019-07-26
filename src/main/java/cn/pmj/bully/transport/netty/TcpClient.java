@@ -28,8 +28,8 @@ public class TcpClient {
 
 
 
-    public static DiscoveryChannel connect(NodeInfo nodeInfo, Long timeOut, TimeUnit timeUnit) throws InterruptedException {
-        log.info("id:{},host:{},port:{},starting-----", nodeInfo.getNodeId(), nodeInfo.getHost(), nodeInfo.getPort());
+    public static DiscoveryChannel connect(NodeInfo localNodeInfo,NodeInfo destNodeInfo) throws InterruptedException {
+        log.info("id:{},host:{},port:{},starting-----", destNodeInfo.getNodeId(), destNodeInfo.getHost(), destNodeInfo.getPort());
         bootstrap.group(group).channel(NioSocketChannel.class)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -39,12 +39,12 @@ public class TcpClient {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline().addLast(new BullyDecoder(BullyResponse.class));
                         ch.pipeline().addLast(new BullyEncoder());
-                        ch.pipeline().addLast(new ClientHandler());
+                        ch.pipeline().addLast( new ClientHandler(localNodeInfo,destNodeInfo));
 
                     }
                 });
-        ChannelFuture sync = bootstrap.connect(new InetSocketAddress(nodeInfo.getHost(), nodeInfo.getPort())).sync();
-        return new DiscoveryChannel(sync.channel(), timeOut, timeUnit);
+        ChannelFuture sync = bootstrap.connect(new InetSocketAddress(destNodeInfo.getHost(), destNodeInfo.getPort())).sync();
+        return new DiscoveryChannel(sync.channel());
     }
 
 

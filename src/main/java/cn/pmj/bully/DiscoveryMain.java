@@ -6,15 +6,16 @@ import cn.pmj.bully.conf.Configuration;
 import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
 public class DiscoveryMain {
 
 
-    private static String confPath = "";
+    private static String confPath = "bully.properties";
 
-    private Configuration configuration = Configuration.getConfiguration(confPath);
+    private static Configuration configuration;
 
     private NodeInfo localNodeInfo;
 
@@ -23,44 +24,33 @@ public class DiscoveryMain {
     public static void main(String[] args) throws Exception {
         DiscoveryMain discoveryMain = new DiscoveryMain();
         discoveryMain.start();
+
     }
 
-    private void start() {
+    private void start() throws Exception {
+        configuration = Configuration.getConfiguration(confPath);
         localNodeInfo = localNode();
         node = new Node(localNodeInfo, configuration);
-        node.bind();
-        NodeInfo master = findMaster();
-        if (master.equals(localNodeInfo)) {
-            pendingElectedMaster();
-        } else {
-            joinElectedMaster();
-        }
+        node.bind((future) -> {
+            if (future.isSuccess()) {
+                log.info("node:{},bind port:{}," +
+                        "successfully", localNodeInfo.getNodeId(), localNodeInfo.getPort());
+
+                node.startElect();
+
+            } else {
+                log.info("node server started failed ,cause:{}", future.cause().getLocalizedMessage());
+            }
+        });
+        node.connectToNodes();
     }
 
-    private void joinElectedMaster() {
-    }
 
-    private void pendingElectedMaster() {
-    }
 
-    private NodeInfo findMaster() {
-        List<BullyResponse> ping = node.elect();
 
-        return null;
-    }
 
     private NodeInfo localNode() {
-
         return new NodeInfo(configuration);
     }
 
-    @FunctionalInterface
-    interface CallBack {
-
-        void callBack(ClassBackEnvent envent);
-    }
-
-    class ClassBackEnvent {
-
-    }
 }

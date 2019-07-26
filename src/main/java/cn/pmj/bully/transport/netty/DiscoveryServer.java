@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-public class DiscoveryServer implements Runnable{
+public class DiscoveryServer implements Runnable {
 
 
     private NodeInfo nodeInfo;
@@ -28,7 +28,7 @@ public class DiscoveryServer implements Runnable{
 
     private GenericFutureListener<? extends Future<? super Void>> listener;
 
-    public DiscoveryServer(NodeInfo nodeInfo,GenericFutureListener<? extends Future<? super Void>> listener) {
+    public DiscoveryServer(NodeInfo nodeInfo, GenericFutureListener<? extends Future<? super Void>> listener) {
         this.nodeInfo = nodeInfo;
         this.listener = listener;
     }
@@ -43,7 +43,7 @@ public class DiscoveryServer implements Runnable{
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast(new BullyDecoder(BullyRequest.class));
                             ch.pipeline().addLast(new BullyEncoder());
-                            ch.pipeline().addLast(new ServerHandler());
+                            ch.pipeline().addLast(new ServerHandler(nodeInfo));
                         }
                     });
             ChannelFuture future = bootstrap.bind(nodeInfo.getHost(), nodeInfo.getPort()).addListener(listener).sync();

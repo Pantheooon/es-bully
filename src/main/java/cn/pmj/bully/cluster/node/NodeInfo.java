@@ -1,7 +1,9 @@
 package cn.pmj.bully.cluster.node;
 
 import cn.pmj.bully.conf.Configuration;
+import cn.pmj.bully.util.Generator;
 import lombok.Data;
+import lombok.Generated;
 
 import java.util.Objects;
 
@@ -19,12 +21,13 @@ public class NodeInfo {
 
     private Role role;
 
-    private Long version = System.currentTimeMillis();
+    private Integer id ;
 
 
 
 
     public NodeInfo(Configuration configuration) {
+        id = Generator.nodeId();
     }
 
 

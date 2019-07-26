@@ -52,7 +52,9 @@ public class InvokeFuture implements Future<BullyResponse> {
 
     @Override
     public BullyResponse get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        latch.await(timeout, unit);
+        if(response == null){
+            latch.await(timeout, unit);
+        }
         return response;
     }
 

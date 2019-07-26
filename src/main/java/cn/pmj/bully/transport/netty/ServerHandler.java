@@ -1,5 +1,6 @@
 package cn.pmj.bully.transport.netty;
 
+import cn.pmj.bully.cluster.node.NodeInfo;
 import cn.pmj.bully.transport.netty.invoke.BullyRequest;
 import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import com.alibaba.fastjson.JSON;
@@ -9,6 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ServerHandler extends ChannelInboundHandlerAdapter {
+
+    private NodeInfo nodeInfo;
+
+    public ServerHandler(NodeInfo nodeInfo) {
+        this.nodeInfo = nodeInfo;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
