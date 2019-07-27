@@ -26,6 +26,7 @@ public class Configuration {
 
     private Integer quorum;
 
+    private Configuration(){}
 
     public static Configuration getConfiguration(String confPath) throws IOException {
         Properties properties = new Properties();

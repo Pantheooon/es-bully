@@ -1,6 +1,7 @@
 package rpc;
 
 import cn.pmj.bully.cluster.node.NodeInfo;
+import cn.pmj.bully.conf.Configuration;
 import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import cn.pmj.bully.transport.netty.DiscoveryServer;
 import cn.pmj.bully.transport.netty.invoke.BullyRequest;
@@ -10,6 +11,7 @@ import cn.pmj.bully.transport.discovery.DiscoveryChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.concurrent.*;
 
 @Slf4j
@@ -18,9 +20,9 @@ public class RpcTest {
     private CountDownLatch latch = new CountDownLatch(1);
 
     @Test
-    public void test1() throws InterruptedException, ExecutionException {
+    public void test1() throws InterruptedException, ExecutionException, IOException {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        NodeInfo nodeInfo = new NodeInfo(null);
+        NodeInfo nodeInfo = new NodeInfo(Configuration.getConfiguration("bully.properties"),null);
         nodeInfo.setHost("localhost");
         nodeInfo.setPort(9000);
         DiscoveryServer server = new DiscoveryServer(nodeInfo, (future) -> {

@@ -2,9 +2,10 @@ package cn.pmj.bully.transport.discovery;
 
 import cn.pmj.bully.cluster.node.NodeInfo;
 import cn.pmj.bully.transport.netty.invoke.BullyRequest;
-import cn.pmj.bully.transport.netty.invoke.ResponseHolder;
 import cn.pmj.bully.transport.netty.invoke.InvokeFuture;
+import cn.pmj.bully.transport.netty.invoke.ResponseHolder;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +39,11 @@ public class DiscoveryChannel {
 
 
 
+
+    public InvokeFuture ping(){
+        BullyRequest request = new BullyRequest();
+        return writeAndFlush(request);
+    }
 
 
 

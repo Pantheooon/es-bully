@@ -1,10 +1,10 @@
 package cn.pmj.bully.cluster.node;
 
 import cn.pmj.bully.conf.Configuration;
-import cn.pmj.bully.transport.netty.invoke.BullyResponse;
-import cn.pmj.bully.transport.netty.TcpClient;
-import cn.pmj.bully.transport.netty.DiscoveryServer;
 import cn.pmj.bully.transport.discovery.DiscoveryChannel;
+import cn.pmj.bully.transport.netty.DiscoveryServer;
+import cn.pmj.bully.transport.netty.TcpClient;
+import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import cn.pmj.bully.transport.netty.invoke.InvokeFuture;
 import io.netty.util.concurrent.GenericFutureListener;
 import lombok.Data;
@@ -26,7 +26,7 @@ public class Node {
     private List<NodeInfo> activeNodes = new ArrayList<>();
     private Map<String, DiscoveryChannel> channelMap = new ConcurrentHashMap<>();
     private final static int RETRY_TIMES = 3;
-    private ExecutorService startUp = Executors.newSingleThreadExecutor();
+    private ExecutorService startUp = Executors.newFixedThreadPool(2);
 
 
     public Node(NodeInfo nodeInfo, Configuration configuration) {
@@ -66,7 +66,7 @@ public class Node {
     public void removeSlaveNodeThenBroadCast() {
     }
 
-    public void doStart() {
+    public void doStart() throws Exception {
         connectToOtherNode();
         while (!enoughNodeNumCheck()) {
             log.warn("node num at least need :{},but found:{}", configuration.getQuorum(), channelMap.size());
@@ -89,7 +89,7 @@ public class Node {
             for (NodeInfo nodeInfo : nodeList) {
                 DiscoveryChannel channel = null;
                 try {
-                    while ((channel = TcpClient.connect(localNodeInfo,nodeInfo)) != null) {
+                    while ((channel = TcpClient.connect(localNodeInfo, nodeInfo)) != null) {
                         channel.setTimeOut(2l);
                         channel.setTimeUnit(TimeUnit.SECONDS);
                         put(channel);
@@ -140,9 +140,22 @@ public class Node {
     }
 
     private NodeInfo findMaster() {
+        List<Future<BullyResponse>> futures = new ArrayList<>();
         for (DiscoveryChannel value : channelMap.values()) {
-         //  InvokeFuture invokeFuture = value.writeAndFlush();
-
+            futures.add(value.ping());
+        }
+        List<BullyResponse> result = new ArrayList<>();
+        futures.forEach((responseFuture) -> {
+            try {
+                result.add(responseFuture.get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
+        if (result.size() < configuration.getQuorum()) {
+            log.warn("node num at least need :{},but found:{}", configuration.getQuorum(), result.size());
         }
         return null;
     }

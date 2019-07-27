@@ -4,6 +4,7 @@ import cn.pmj.bully.cluster.node.NodeInfo;
 import cn.pmj.bully.transport.netty.invoke.BullyRequest;
 import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import com.alibaba.fastjson.JSON;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         BullyResponse response = new BullyResponse();
         response.setRequestId(request.getRequestId());
         response.setResponse(JSON.toJSONString(request));
-        ctx.writeAndFlush(response);
+        ChannelFuture future = ctx.writeAndFlush(response);
     }
 
 

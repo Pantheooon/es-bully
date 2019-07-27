@@ -1,5 +1,6 @@
 package cn.pmj.bully.cluster.node;
 
+import cn.pmj.bully.cluster.ClusterState;
 import cn.pmj.bully.conf.Configuration;
 import cn.pmj.bully.util.Generator;
 import lombok.Data;
@@ -24,7 +25,9 @@ public class NodeInfo {
 
     private Configuration configuration;
 
-    public NodeInfo(Configuration configuration) {
+    private ClusterState clusterState;
+
+    public NodeInfo(Configuration configuration,ClusterState clusterState) {
         this.host = configuration.getHost();
         this.port = configuration.getPort();
         this.nodeId = configuration.getNodeId();
