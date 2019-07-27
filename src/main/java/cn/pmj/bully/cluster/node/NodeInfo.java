@@ -3,7 +3,6 @@ package cn.pmj.bully.cluster.node;
 import cn.pmj.bully.conf.Configuration;
 import cn.pmj.bully.util.Generator;
 import lombok.Data;
-import lombok.Generated;
 
 import java.util.Objects;
 
@@ -23,10 +22,12 @@ public class NodeInfo {
 
     private Integer id ;
 
-
-
+    private Configuration configuration;
 
     public NodeInfo(Configuration configuration) {
+        this.host = configuration.getHost();
+        this.port = configuration.getPort();
+        this.nodeId = configuration.getNodeId();
         id = Generator.nodeId();
     }
 

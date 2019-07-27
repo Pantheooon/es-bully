@@ -3,11 +3,7 @@ package cn.pmj.bully;
 import cn.pmj.bully.cluster.node.Node;
 import cn.pmj.bully.cluster.node.NodeInfo;
 import cn.pmj.bully.conf.Configuration;
-import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 public class DiscoveryMain {
@@ -36,13 +32,12 @@ public class DiscoveryMain {
                 log.info("node:{},bind port:{}," +
                         "successfully", localNodeInfo.getNodeId(), localNodeInfo.getPort());
 
-                node.startElect();
+                node.doStart();
 
             } else {
                 log.info("node server started failed ,cause:{}", future.cause().getLocalizedMessage());
             }
         });
-        node.connectToNodes();
     }
 
 

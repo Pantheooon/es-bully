@@ -66,7 +66,7 @@ public class Node {
     public void removeSlaveNodeThenBroadCast() {
     }
 
-    public void startElect() {
+    public void doStart() {
         connectToOtherNode();
         while (!enoughNodeNumCheck()) {
             log.warn("node num at least need :{},but found:{}", configuration.getQuorum(), channelMap.size());
@@ -84,7 +84,7 @@ public class Node {
         }
     }
 
-    private void connectToOtherNode() {
+    public void connectToOtherNode() {
         startUp.execute(() -> {
             for (NodeInfo nodeInfo : nodeList) {
                 DiscoveryChannel channel = null;
@@ -141,7 +141,7 @@ public class Node {
 
     private NodeInfo findMaster() {
         for (DiscoveryChannel value : channelMap.values()) {
-//            InvokeFuture invokeFuture = value.writeAndFlush();
+         //  InvokeFuture invokeFuture = value.writeAndFlush();
 
         }
         return null;

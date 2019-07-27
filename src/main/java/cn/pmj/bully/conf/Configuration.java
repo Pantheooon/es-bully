@@ -20,6 +20,7 @@ public class Configuration {
 
     private Integer port;
 
+    private String nodeId;
 
     private List<String> hosts;
 
@@ -35,12 +36,14 @@ public class Configuration {
         Integer port = Integer.valueOf(properties.getProperty("bind.port"));
         String hosts = (String) properties.get("unicast.hosts");
         Integer quorum = Integer.valueOf((String) properties.get("elect.quorum"));
+        String nodeId = (String)properties.get("node-id");
         Configuration configuration = new Configuration();
         configuration.setClusterId(clusterId);
         configuration.setHost(host);
         configuration.setPort(port);
         configuration.setHosts(Arrays.asList(hosts.split(",")));
         configuration.setQuorum(quorum);
+        configuration.setNodeId(nodeId);
         return configuration;
     }
 
