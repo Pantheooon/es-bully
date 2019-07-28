@@ -20,7 +20,6 @@ public class DiscoveryMain {
 
     private Node node;
 
-    private ClusterState clusterState;
 
     public static void main(String[] args) throws Exception {
 
@@ -34,7 +33,6 @@ public class DiscoveryMain {
         configuration = Configuration.getConfiguration(confPath);
         localNodeInfo = localNode();
         node = new Node(localNodeInfo, configuration);
-        clusterState = new ClusterState();
     }
 
 
@@ -44,7 +42,6 @@ public class DiscoveryMain {
             if (future.isSuccess()) {
                 log.info("node:{},bind port:{}," +
                         "successfully", localNodeInfo.getNodeId(), localNodeInfo.getPort());
-
                 node.doStart();
 
             } else {
@@ -59,7 +56,7 @@ public class DiscoveryMain {
 
     private NodeInfo localNode() {
 
-        return new NodeInfo(configuration,clusterState);
+        return new NodeInfo(configuration);
     }
 
 }

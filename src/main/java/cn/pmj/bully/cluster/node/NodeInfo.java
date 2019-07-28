@@ -27,11 +27,12 @@ public class NodeInfo {
 
     private ClusterState clusterState;
 
-    public NodeInfo(Configuration configuration,ClusterState clusterState) {
+    public NodeInfo(Configuration configuration) {
         this.host = configuration.getHost();
         this.port = configuration.getPort();
         this.nodeId = configuration.getNodeId();
         id = Generator.nodeId();
+        clusterState = new ClusterState();
     }
 
 

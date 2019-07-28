@@ -40,15 +40,24 @@ public class DiscoveryChannel {
 
 
 
-    public InvokeFuture ping(){
+    public InvokeFuture elect(){
         BullyRequest request = new BullyRequest();
         return writeAndFlush(request);
     }
 
 
 
+    public InvokeFuture heartBeat(){
+        BullyRequest request = new BullyRequest();
+        return writeAndFlush(request);
+    }
+
+
     public void close() {
         channel.close();
     }
 
+    public void joinCluster() {
+
+    }
 }
