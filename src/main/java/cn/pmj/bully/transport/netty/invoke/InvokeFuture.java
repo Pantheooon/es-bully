@@ -21,7 +21,6 @@ public class InvokeFuture implements Future<BullyResponse> {
         this.request = bullyRequest;
         this.timeOut = timeOut;
         this.timeUnit = timeUnit;
-        request.setTimeOut(System.currentTimeMillis() + timeUnit.toMillis(timeOut));
     }
 
     @Override

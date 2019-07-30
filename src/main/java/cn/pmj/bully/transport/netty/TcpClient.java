@@ -1,35 +1,32 @@
 package cn.pmj.bully.transport.netty;
 
+import cn.pmj.bully.cluster.node.INode;
+import cn.pmj.bully.cluster.node.Node;
 import cn.pmj.bully.cluster.node.NodeInfo;
+import cn.pmj.bully.transport.netty.invoke.BullyRequest;
 import cn.pmj.bully.transport.netty.invoke.BullyResponse;
+import cn.pmj.bully.transport.netty.invoke.RequestType;
 import cn.pmj.bully.transport.netty.serialize.BullyDecoder;
 import cn.pmj.bully.transport.netty.serialize.BullyEncoder;
-import cn.pmj.bully.transport.discovery.DiscoveryChannel;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class TcpClient {
 
 
-    private static EventLoopGroup group = new NioEventLoopGroup(1);
+    public static void connect(NodeInfo localNodeInfo, INode destNodeInfo, Node node, GenericFutureListener<? extends Future<? super Void>> listener) throws InterruptedException {
+        EventLoopGroup group = new NioEventLoopGroup(1);
+        Bootstrap bootstrap = new Bootstrap();
 
-    private static Bootstrap bootstrap = new Bootstrap();
-
-
-
-    public static DiscoveryChannel connect(NodeInfo localNodeInfo,NodeInfo destNodeInfo) throws InterruptedException {
-        log.info("id:{},host:{},port:{},starting-----", destNodeInfo.getNodeId(), destNodeInfo.getHost(), destNodeInfo.getPort());
         bootstrap.group(group).channel(NioSocketChannel.class)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -39,12 +36,11 @@ public class TcpClient {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline().addLast(new BullyDecoder(BullyResponse.class));
                         ch.pipeline().addLast(new BullyEncoder());
-                        ch.pipeline().addLast( new ClientHandler(localNodeInfo,destNodeInfo));
+                        ch.pipeline().addLast(new ClientHandler(localNodeInfo, node));
 
                     }
                 });
-        ChannelFuture sync = bootstrap.connect(new InetSocketAddress(destNodeInfo.getHost(), destNodeInfo.getPort())).sync();
-        return new DiscoveryChannel(sync.channel());
+        bootstrap.connect(new InetSocketAddress(destNodeInfo.getHost(), destNodeInfo.getPort())).sync().addListener(listener);
     }
 
 

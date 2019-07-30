@@ -1,42 +1,48 @@
 package cn.pmj.bully.transport.netty;
 
+import cn.pmj.bully.cluster.node.Node;
 import cn.pmj.bully.cluster.node.NodeInfo;
-import cn.pmj.bully.transport.netty.invoke.BullyResponse;
-import cn.pmj.bully.transport.netty.invoke.ResponseHolder;
+import cn.pmj.bully.transport.discovery.DiscoveryChannel;
+import cn.pmj.bully.transport.netty.invoke.*;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class ClientHandler extends ChannelInboundHandlerAdapter {
 
     private NodeInfo localNodeInfo;
+    private Node node;
+    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
-    private NodeInfo destNodeInfo;
-
-   private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
-
-    public ClientHandler(NodeInfo localNodeInfo, NodeInfo destNodeInfo) {
+    public ClientHandler(NodeInfo localNodeInfo, Node node) {
         this.localNodeInfo = localNodeInfo;
-        this.destNodeInfo = destNodeInfo;
+        this.node = node;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        executorService.scheduleAtFixedRate(()->{
-            log.info("currentTime:{}",System.currentTimeMillis());
-        },0,1, TimeUnit.SECONDS);
-        log.info("启动成功。。。。。。。");
+        BullyRequest request = new BullyRequest();
+        request.setNodeInfo(localNodeInfo);
+        request.setType(RequestType.ACTIVE);
+        ctx.channel().writeAndFlush(request);
+//        executorService.scheduleAtFixedRate(() -> {
+//            log.info("currentTime:{}", System.currentTimeMillis());
+//        }, 0, 1, TimeUnit.SECONDS);
+//        log.info("启动成功。。。。。。。");
     }
 
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        BullyResponse bullyResponse = (BullyResponse)msg;
+        BullyResponse bullyResponse = (BullyResponse) msg;
+        if (bullyResponse.getMsgType() == ResponseType.ACTIVE) {
+            DiscoveryChannel discoveryChannel = new DiscoveryChannel(localNodeInfo, bullyResponse.getNodeInfo(), ctx.channel());
+            node.put(discoveryChannel);
+        }
         ResponseHolder.setResponse(bullyResponse);
     }
 

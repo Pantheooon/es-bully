@@ -12,6 +12,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class DiscoveryServer implements Runnable {
     private NodeInfo nodeInfo;
     private ServerBootstrap bootstrap = new ServerBootstrap();
     private EventLoopGroup workerGroup = new NioEventLoopGroup(1);
-    private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+    private EventLoopGroup bossGroup = new NioEventLoopGroup(2);
 
     private GenericFutureListener<? extends Future<? super Void>> listener;
 

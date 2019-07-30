@@ -7,6 +7,7 @@ import cn.pmj.bully.transport.discovery.DiscoveryChannel;
 import cn.pmj.bully.transport.netty.DiscoveryServer;
 import cn.pmj.bully.transport.netty.TcpClient;
 import cn.pmj.bully.transport.netty.invoke.BullyResponse;
+import cn.pmj.bully.transport.netty.invoke.ResponseType;
 import io.netty.util.concurrent.GenericFutureListener;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -18,12 +19,11 @@ import java.util.concurrent.*;
 @Slf4j
 public class Node {
 
-
-    private List<NodeInfo> nodeList;
     private Configuration configuration;
     private NodeInfo localNodeInfo;
-    private List<NodeInfo> activeNodes = new ArrayList<>();
+    private List<NodeInfo> activeNodes = new CopyOnWriteArrayList<>();
     private Map<String, DiscoveryChannel> channelMap = new ConcurrentHashMap<>();
+    private Map<String, NodeInfo> activeNodeInfo = new ConcurrentHashMap<>();
     private final static int RETRY_TIMES = 3;
     private ExecutorService startUp = Executors.newFixedThreadPool(2);
 
@@ -34,9 +34,20 @@ public class Node {
         this.configuration = configuration;
     }
 
+    private List<INode> nodesShortInfo() {
+        List<INode> nodes = new ArrayList<>();
+        List<String> hosts = configuration.getHosts();
+        for (String host : hosts) {
+            String[] split = host.split(":");
+            nodes.add(new ShortNodeInfo(split[0], Integer.valueOf(split[1])));
+        }
+        return nodes;
+    }
 
     public void put(DiscoveryChannel discoveryChannel) {
-        channelMap.putIfAbsent(discoveryChannel.getNodeInfo().getNodeId(), discoveryChannel);
+        channelMap.putIfAbsent(discoveryChannel.getDest().getNodeId(), discoveryChannel);
+        activeNodeInfo.putIfAbsent(discoveryChannel.getDest().getNodeId(), discoveryChannel.getDest());
+        localNodeInfo.getClusterState().addActiveNodeInfo(discoveryChannel.getDest().getNodeId(), discoveryChannel.getDest());
     }
 
     /**
@@ -44,7 +55,7 @@ public class Node {
      */
     public void remove(String nodeId) {
         DiscoveryChannel discoveryChannel = channelMap.get(nodeId);
-        NodeInfo nodeInfo = discoveryChannel.getNodeInfo();
+        NodeInfo nodeInfo = discoveryChannel.getDest();
         if (nodeInfo.getRole() == NodeInfo.Role.MASTER && checkMasterNodeOffLine()) {
         }
 
@@ -72,20 +83,20 @@ public class Node {
 
     }
 
-    private void startElect(){
+    private void startElect() {
         while (!enoughNodeNumCheck()) {
             log.warn("node num at least need :{},but found:{}", configuration.getQuorum(), channelMap.size());
             try {
-                Thread.sleep(500);
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
         NodeInfo master = findMaster();
-        if (master == null){
+        if (master == null) {
             startElect();
         }
-        if (master != null){
+        if (master != null) {
             if (master.equals(localNodeInfo)) {
                 pendingElectedMaster(new ElectCallBack() {
                     @Override
@@ -118,19 +129,34 @@ public class Node {
 
 
     public void connectToOtherNode() {
-        startUp.execute(() -> {
-            for (NodeInfo nodeInfo : nodeList) {
-                DiscoveryChannel channel = null;
-                try {
-                    while ((channel = TcpClient.connect(localNodeInfo, nodeInfo)) != null) {
-                        channel.setTimeOut(2l);
-                        channel.setTimeUnit(TimeUnit.SECONDS);
-                        put(channel);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        List<INode> nodeList = nodesShortInfo();
 
+
+        startUp.execute(() -> {
+            for (; ; ) {
+                if (channelMap.size() == configuration.getHosts().size()) {
+                    break;
+                }
+                for (INode node : nodeList) {
+                    boolean exist = channelMap.values().stream().anyMatch((channel) -> {
+                        String host = channel.getDest().getHost();
+                        Integer port = channel.getDest().getPort();
+                        return host.equals(node.getHost()) && port.equals(node.getPort());
+                    });
+                    if (exist) {
+                        continue;
+                    }
+                    try {
+                        TcpClient.connect(localNodeInfo, node, this, (future) -> {
+                            if (future.isSuccess()) {
+                                log.info("连接至：{}:{}", node.getHost(), node.getPort());
+                            }
+                        });
+                    }catch (Exception e){
+                        log.info("Exception:{}", e.getMessage());
+                    }
+
+                }
             }
         });
     }
@@ -146,9 +172,9 @@ public class Node {
         return channelMap.size() >= configuration.getQuorum();
     }
 
-    private void joinElectedMaster(NodeInfo master,ElectCallBack electCallBack) {
+    private void joinElectedMaster(NodeInfo master, ElectCallBack electCallBack) {
         DiscoveryChannel discoveryChannel = channelMap.get(master.getNodeId());
-        if (discoveryChannel == null){
+        if (discoveryChannel == null) {
             electCallBack.failed(new BullyElectException("channel为空"));
             return;
         }
@@ -157,9 +183,9 @@ public class Node {
 
     private void pendingElectedMaster(ElectCallBack callBack) {
         int count = 0;
-        Long timeOut = System.currentTimeMillis()+3600;
-        while (count<configuration.getQuorum()){
-            if (System.currentTimeMillis()>=timeOut){
+        Long timeOut = System.currentTimeMillis() + 3600;
+        while (count < configuration.getQuorum()) {
+            if (System.currentTimeMillis() >= timeOut) {
                 callBack.failed(new TimeoutException("选举超时"));
                 break;
             }
@@ -167,18 +193,18 @@ public class Node {
                 NodeInfo take = joinedNodeInfo.take();
                 Long remoteVersion = take.getClusterState().getElectVersion();
                 Long currentVersion = localNodeInfo.getClusterState().getElectVersion();
-                if (remoteVersion<currentVersion){
+                if (remoteVersion < currentVersion) {
                     continue;
-                }else if (remoteVersion == currentVersion){
+                } else if (remoteVersion == currentVersion) {
                     count++;
-                }else {
+                } else {
                     callBack.failed(new BullyElectException("elect failed"));
                 }
             } catch (InterruptedException e) {
                 callBack.failed(e);
             }
         }
-        if (count>=configuration.getQuorum()){
+        if (count >= configuration.getQuorum()) {
             callBack.success();
         }
     }
@@ -188,16 +214,18 @@ public class Node {
         for (DiscoveryChannel value : channelMap.values()) {
             futures.add(value.elect());
         }
-        List<NodeInfo> activeNode = new ArrayList<>();
+        List<NodeInfo> activeNodes = new ArrayList<>();
         List<BullyResponse> result = new ArrayList<>();
         List<NodeInfo> masters = new ArrayList<>();
         futures.forEach((responseFuture) -> {
             try {
                 BullyResponse response = responseFuture.get();
-                NodeInfo nodeInfo = response.getNodeInfo();
-                result.add(response);
-                activeNode.add(nodeInfo);
-                masters.add(nodeInfo.getClusterState().getMaster());
+                if (response.getMsgType() == ResponseType.PONG) {
+                    NodeInfo nodeInfo = response.getNodeInfo();
+                    result.add(response);
+                    activeNodes.add(nodeInfo);
+                    masters.add(nodeInfo.getClusterState().getMaster());
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
@@ -208,38 +236,37 @@ public class Node {
             log.warn("node num at least need :{},but found:{}", configuration.getQuorum(), result.size());
             return null;
         }
-        if (masters.size() != 0){
+        if (masters.size() != 0) {
             //获取当前集群中已经存在的master节点
-           return extractMaster(masters);
+            return extractMaster(masters);
         }
-        if (activeNode.size() != 0){
-            return getCandiateMater(activeNode);
+        if (activeNodes.size() != 0) {
+            return getCandiateMater(activeNodes);
         }
 
         return null;
     }
 
 
-
-    private NodeInfo getCandiateMater(List<NodeInfo> nodeInfos){
+    private NodeInfo getCandiateMater(List<NodeInfo> nodeInfos) {
         NodeInfo nodeInfo = extractMaster(nodeInfos);
-        if (nodeInfo == null){
+        if (nodeInfo == null) {
             return null;
         }
         int count = 0;
         for (NodeInfo info : nodeInfos) {
-            if (info.getNodeId().equals(info.getNodeId())){
-                count ++;
+            if (info.getNodeId().equals(info.getNodeId())) {
+                count++;
             }
         }
-        if (count>=configuration.getQuorum()){
+        if (count >= configuration.getQuorum()) {
             return nodeInfo;
         }
         return null;
     }
 
-    private NodeInfo extractMaster(List<NodeInfo> nodeInfos){
-        if (nodeInfos == null || nodeInfos.size() == 0){
+    private NodeInfo extractMaster(List<NodeInfo> nodeInfos) {
+        if (nodeInfos == null || nodeInfos.size() == 0) {
             return null;
         }
         Optional<NodeInfo> nodeInfo = nodeInfos.stream().min((o1, o2) -> {
@@ -252,8 +279,9 @@ public class Node {
     }
 
 
-    interface ElectCallBack{
+    interface ElectCallBack {
         void success();
+
         void failed(Exception e);
     }
 }

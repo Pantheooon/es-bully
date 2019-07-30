@@ -3,12 +3,13 @@ package cn.pmj.bully.cluster.node;
 import cn.pmj.bully.cluster.ClusterState;
 import cn.pmj.bully.conf.Configuration;
 import cn.pmj.bully.util.Generator;
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 import java.util.Objects;
 
 @Data
-public class NodeInfo {
+public class NodeInfo implements INode {
 
 
     private String host;
@@ -21,8 +22,9 @@ public class NodeInfo {
 
     private Role role;
 
-    private Integer id ;
+    private Integer id;
 
+    @JSONField(serialize = false)
     private Configuration configuration;
 
     private ClusterState clusterState;
@@ -33,8 +35,8 @@ public class NodeInfo {
         this.nodeId = configuration.getNodeId();
         id = Generator.nodeId();
         clusterState = new ClusterState();
+        this.configuration = configuration;
     }
-
 
 
     @Override
@@ -46,9 +48,8 @@ public class NodeInfo {
     }
 
 
-
-   public   enum  Role{
-        MASTER,SLAVE,NONE
+    public enum Role {
+        MASTER, SLAVE, NONE
     }
 
 }

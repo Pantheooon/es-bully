@@ -1,5 +1,7 @@
 package cn.pmj.bully.transport.netty.invoke;
 
+import cn.pmj.bully.cluster.node.NodeInfo;
+import cn.pmj.bully.util.Generator;
 import lombok.Data;
 import lombok.ToString;
 
@@ -7,15 +9,15 @@ import lombok.ToString;
 @ToString
 public class BullyRequest {
 
-    private String nodeId;
 
-    private String requestId;
+    private String requestId = Generator.requestId();
 
-    private String body;
+    private NodeInfo nodeInfo;
 
-    private Integer msgType;
+    private Long electVersion;
 
-    private Long version;
+    private RequestType type;
 
-    private Long timeOut;
+
+
 }
