@@ -78,6 +78,7 @@ public class Node {
     }
 
     public void doStart() throws Exception {
+        Thread.sleep(1000);
         connectToOtherNode();
         startElect();
 
@@ -87,7 +88,7 @@ public class Node {
         while (!enoughNodeNumCheck()) {
             log.warn("node num at least need :{},but found:{}", configuration.getQuorum(), channelMap.size());
             try {
-                Thread.sleep(5000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

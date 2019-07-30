@@ -1,6 +1,5 @@
 package cn.pmj.bully.transport.netty.serialize.core;
 
-import cn.pmj.bully.transport.netty.serialize.core.ISerialize;
 import com.alibaba.fastjson.JSON;
 
 public class JsonSerialize implements ISerialize {

@@ -7,6 +7,7 @@ import cn.pmj.bully.conf.Configuration;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class DiscoveryMain {
@@ -37,17 +38,20 @@ public class DiscoveryMain {
 
 
     private void start() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
         setUp();
         node.bind((future) -> {
             if (future.isSuccess()) {
                 log.info("node:{},bind port:{}," +
                         "successfully", localNodeInfo.getNodeId(), localNodeInfo.getPort());
-                node.doStart();
+                latch.countDown();
 
             } else {
                 log.info("node server started failed ,cause:{}", future.cause().getLocalizedMessage());
             }
         });
+        latch.await();
+        node.doStart();
     }
 
 
