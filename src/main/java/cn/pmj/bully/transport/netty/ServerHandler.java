@@ -1,16 +1,17 @@
 package cn.pmj.bully.transport.netty;
 
+import cn.pmj.bully.cluster.ClusterState;
 import cn.pmj.bully.cluster.node.NodeInfo;
-import cn.pmj.bully.transport.discovery.handler.BullyHandler;
-import cn.pmj.bully.transport.discovery.handler.ElectHandler;
 import cn.pmj.bully.transport.netty.invoke.BullyRequest;
 import cn.pmj.bully.transport.netty.invoke.BullyResponse;
 import cn.pmj.bully.transport.netty.invoke.RequestType;
+import cn.pmj.bully.transport.netty.invoke.ResponseType;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 
 import static cn.pmj.bully.transport.netty.invoke.ResponseType.ACTIVE;
+import static cn.pmj.bully.transport.netty.invoke.ResponseType.JOIN_SUCCESS;
 
 @Slf4j
 public class ServerHandler extends ChannelInboundHandlerAdapter {
@@ -24,7 +25,6 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        log.info("msg-->{}", msg);
         BullyRequest request = (BullyRequest) msg;
         BullyHandler handler = handler(request.getType());
         ctx.writeAndFlush(handler.handle(request));
@@ -40,24 +40,61 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     private BullyHandler handler(RequestType type) {
         switch (type) {
             case ELECT:
-                return new ElectHandler(this.nodeInfo);
+                return electHandler();
             case ACTIVE:
                 return activeHandler();
+            case JOIN:
+                return joinHandler();
             default:
                 return null;
         }
     }
 
-    private BullyHandler activeHandler() {
-        return new BullyHandler() {
-            @Override
-            public BullyResponse handle(BullyRequest bullyRequest) {
-                BullyResponse response = new BullyResponse();
-                response.setRequestId(bullyRequest.getRequestId());
-                response.setMsgType(ACTIVE);
-                response.setNodeInfo(nodeInfo);
-                return response;
-            }
+    private BullyHandler joinHandler() {
+        return (request)->{
+            BullyResponse response = new BullyResponse();
+            response.setRequestId(request.getRequestId());
+            response.setMsgType(JOIN_SUCCESS);
+            return response;
         };
+    }
+
+    private BullyHandler activeHandler() {
+        return (request)->{
+            BullyResponse response = new BullyResponse();
+            response.setRequestId(request.getRequestId());
+            response.setMsgType(ACTIVE);
+            response.setNodeInfo(nodeInfo);
+            return response;
+        };
+    }
+
+    private BullyHandler electHandler(){
+        return (bullyRequest )->{
+            BullyResponse response = new BullyResponse();
+            response.setRequestId(bullyRequest.getRequestId());
+            ClusterState clusterState = nodeInfo.getClusterState();
+            Long currentVersion = clusterState.getElectVersion();
+            Long electVersion = bullyRequest.getElectVersion();
+            if (electVersion > clusterState.getElectVersion()) {
+                response.setMsgType(ResponseType.PONG);
+            } else if (electVersion < currentVersion) {
+                response.setMsgType(ResponseType.FAILED);
+                return response;
+            } else {
+                response.setMsgType(ResponseType.PONG);
+                clusterState.setElectVersion(electVersion);
+            }
+            response.setNodeInfo(nodeInfo);
+            return response;
+        };
+    }
+
+
+    @FunctionalInterface
+    public interface BullyHandler {
+
+
+        BullyResponse handle(BullyRequest bullyRequest);
     }
 }

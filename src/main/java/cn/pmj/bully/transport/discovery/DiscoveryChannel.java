@@ -1,17 +1,19 @@
 package cn.pmj.bully.transport.discovery;
 
+import cn.pmj.bully.cluster.ElectCallBack;
 import cn.pmj.bully.cluster.node.INode;
+import cn.pmj.bully.cluster.node.Node;
 import cn.pmj.bully.cluster.node.NodeInfo;
-import cn.pmj.bully.transport.netty.invoke.BullyRequest;
-import cn.pmj.bully.transport.netty.invoke.InvokeFuture;
-import cn.pmj.bully.transport.netty.invoke.RequestType;
-import cn.pmj.bully.transport.netty.invoke.ResponseHolder;
+import cn.pmj.bully.transport.netty.invoke.*;
 import cn.pmj.bully.util.Generator;
 import io.netty.channel.Channel;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import static cn.pmj.bully.transport.netty.invoke.RequestType.JOIN;
 
 
 @Slf4j
@@ -58,7 +60,20 @@ public class DiscoveryChannel {
         channel.close();
     }
 
-    public void joinCluster() {
-
+    public void joinCluster(NodeInfo master, Node node, ElectCallBack electCallBack) {
+        BullyRequest request = new BullyRequest();
+        request.setType(JOIN);
+        request.setNodeInfo(local);
+        request.setElectVersion(local.getClusterState().getElectVersion());
+        request.setMaster(master);
+        InvokeFuture future = writeAndFlush(request);
+        try {
+            BullyResponse response = future.get();
+            NodeInfo nodeInfo = response.getNodeInfo();
+            node.addJoinedNodeInfo(nodeInfo);
+        } catch (Exception e) {
+            electCallBack.failed(e);
+        }
+        electCallBack.success();
     }
 }

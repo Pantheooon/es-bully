@@ -8,7 +8,6 @@ public class BullyResponse {
 
     private String requestId;
 
-
     private NodeInfo nodeInfo;
 
     private ResponseType msgType;

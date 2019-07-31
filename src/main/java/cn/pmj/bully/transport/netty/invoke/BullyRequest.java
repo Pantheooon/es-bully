@@ -18,6 +18,8 @@ public class BullyRequest {
 
     private RequestType type;
 
+    private NodeInfo master;
+
 
 
 }

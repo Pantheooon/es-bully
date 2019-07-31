@@ -1,6 +1,7 @@
 package cn.pmj.bully.cluster.node;
 
 import cn.pmj.bully.cluster.ClusterState;
+import cn.pmj.bully.cluster.ElectCallBack;
 import cn.pmj.bully.conf.Configuration;
 import cn.pmj.bully.exception.BullyElectException;
 import cn.pmj.bully.transport.discovery.DiscoveryChannel;
@@ -28,6 +29,12 @@ public class Node {
     private ExecutorService startUp = Executors.newFixedThreadPool(2);
 
     private BlockingQueue<NodeInfo> joinedNodeInfo = new LinkedBlockingQueue<>();
+
+
+
+    public void addJoinedNodeInfo(NodeInfo nodeInfo){
+            joinedNodeInfo.add(nodeInfo);
+    }
 
     public Node(NodeInfo nodeInfo, Configuration configuration) {
         localNodeInfo = nodeInfo;
@@ -78,7 +85,6 @@ public class Node {
     }
 
     public void doStart() throws Exception {
-        Thread.sleep(1000);
         connectToOtherNode();
         startElect();
 
@@ -179,7 +185,7 @@ public class Node {
             electCallBack.failed(new BullyElectException("channel为空"));
             return;
         }
-        discoveryChannel.joinCluster();
+        discoveryChannel.joinCluster(master,this,electCallBack);
     }
 
     private void pendingElectedMaster(ElectCallBack callBack) {
@@ -279,10 +285,4 @@ public class Node {
         return nodeInfo.get();
     }
 
-
-    interface ElectCallBack {
-        void success();
-
-        void failed(Exception e);
-    }
 }
