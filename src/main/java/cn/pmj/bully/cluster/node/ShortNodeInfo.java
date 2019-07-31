@@ -15,7 +15,6 @@ public class ShortNodeInfo implements INode {
 
 
 
-
     @Override
     public String getHost() {
         return host;

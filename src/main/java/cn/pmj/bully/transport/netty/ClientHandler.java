@@ -29,10 +29,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         request.setNodeInfo(localNodeInfo);
         request.setType(RequestType.ACTIVE);
         ctx.channel().writeAndFlush(request);
-//        executorService.scheduleAtFixedRate(() -> {
-//            log.info("currentTime:{}", System.currentTimeMillis());
-//        }, 0, 1, TimeUnit.SECONDS);
-//        log.info("启动成功。。。。。。。");
     }
 
 

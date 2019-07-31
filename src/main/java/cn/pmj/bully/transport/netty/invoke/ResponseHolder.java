@@ -1,15 +1,12 @@
 package cn.pmj.bully.transport.netty.invoke;
 
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class ResponseHolder {
 
 
-    private static Map<String, InvokeFuture> map = new HashMap<>();
+    private static Map<String, InvokeFuture> map = new ConcurrentHashMap<>();
 
     static {
 
@@ -31,8 +28,7 @@ public class ResponseHolder {
         if (invokeFuture != null) {
             CountDownLatch latch = invokeFuture.getLatch();
             invokeFuture.setResponse(response);
-            long count = latch.getCount();
-            if (count == 1) {
+            if (latch.getCount() == 1) {
                 latch.countDown();
             }
         }
